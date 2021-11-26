@@ -1,0 +1,23 @@
+AMIFilters:
+  - Name: architecture
+    Values: x86_64
+  - Name: block-device-mapping.volume-type
+    Values: gp3
+  - Name: owner-alias
+    Values: amazon
+#  - Name: owner-id
+#    Values: 679593333241
+  - Name: is-public
+    Values: "true"
+  - Name: virtualization-type
+    Values: hvm
+  - Name: root-device-type
+    Values: ebs
+  - Name: sriov-net-support
+    Values: simple
+  - Name: ena-support
+    Values: "true"
+  - Name: state
+    Values: available
+  - Name: name
+    Values: "*al2022*"
