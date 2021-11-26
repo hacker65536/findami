@@ -17,6 +17,7 @@ package cmd
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"text/tabwriter"
@@ -56,6 +57,7 @@ to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 
 		debug, _ := cmd.Flags().GetBool("debug")
+		verbose, _ := cmd.Flags().GetBool("verbose")
 		if debug {
 			log.SetLevel(log.DebugLevel)
 		}
@@ -97,7 +99,7 @@ to quickly create a Cobra application.`,
 				}).Debug("[debug]")
 
 		}
-		findami(params)
+		findami(params, verbose)
 	},
 }
 
@@ -120,6 +122,7 @@ func init() {
 	// when this action is called directly.
 	//rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	rootCmd.Flags().BoolP("debug", "d", false, "show debug message")
+	rootCmd.Flags().BoolP("verbose", "v", false, "show detal with json. Only ami-id sepcified")
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -150,7 +153,7 @@ func initConfig() {
 	}
 }
 
-func findami(params *ec2.DescribeImagesInput) {
+func findami(params *ec2.DescribeImagesInput, verbose bool) {
 
 	cfg, err := config.LoadDefaultConfig(context.TODO())
 	if err != nil {
@@ -171,20 +174,22 @@ func findami(params *ec2.DescribeImagesInput) {
 			"err": err,
 		}).Fatal("Can't list images")
 	}
-	w := tabwriter.NewWriter(os.Stdout, 2, 0, 3, ' ', 0)
-	for _, v2 := range resp.Images {
 
-		fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n",
-			aws.ToString(v2.ImageId),
-			aws.ToString(v2.PlatformDetails),
-			v2.Architecture,
-			v2.BlockDeviceMappings[0].Ebs.VolumeType,
-			aws.ToString(v2.Name),
-		)
-	}
-	w.Flush()
-	/*
+	if params.ImageIds != nil && verbose  {
 		j, _ := json.Marshal(resp)
 		fmt.Println(string(j))
-	*/
+	} else {
+		w := tabwriter.NewWriter(os.Stdout, 2, 0, 3, ' ', 0)
+		for _, v2 := range resp.Images {
+
+			fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n",
+				aws.ToString(v2.ImageId),
+				aws.ToString(v2.PlatformDetails),
+				v2.Architecture,
+				v2.BlockDeviceMappings[0].Ebs.VolumeType,
+				aws.ToString(v2.Name),
+			)
+		}
+		w.Flush()
+	}
 }
